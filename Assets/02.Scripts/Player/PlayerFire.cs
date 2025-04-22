@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Redcode.Pools; // PoolManagerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 
 public class PlayerFire : MonoBehaviour
 {
@@ -7,57 +8,61 @@ public class PlayerFire : MonoBehaviour
     private PlayerStatsSO stats;
     [SerializeField]
     private float throwForce;
-
     public GameObject FirePos;
-    public GameObject BombPrefab;
-    public ParticleSystem BulletEffect;
 
+    private PoolManager poolManager;
     private bool isReloading = false;
     private int bulletCount;
     private int bombCount;
+    private float currentThrowForce;
+    private float currentFirerate;
 
     private void Awake()
     {
         Cursor.lockState = CursorLockMode.Locked;
+        poolManager = Object.FindFirstObjectByType<PoolManager>();
     }
 
     private void Start()
     {
         bulletCount = stats.MaxBullets;
         bombCount = stats.MaxBombs;
+        currentThrowForce = 0f;
+        currentFirerate = 0f;
         PlayerUI.Instance.SetBulletCount(bulletCount, stats.MaxBullets);
         PlayerUI.Instance.SetBombCount(bombCount, stats.MaxBombs);
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            StartCoroutine(Reload());
-        }
+        currentFirerate += Time.deltaTime;
 
-        //Åº
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetKeyDown(KeyCode.R))
+            StartCoroutine(Reload());
+
+        if (Input.GetMouseButton(0))
         {
-            if(bulletCount <= 0 || isReloading)
-            {
-                Debug.Log("No Bullets Left");
+            if (bulletCount <= 0 || isReloading)
                 return;
-            }
+
+            if (currentFirerate < stats.FireRate)
+                return;
 
             Ray ray = new Ray(FirePos.transform.position, FirePos.transform.forward);
-            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
             RaycastHit hitInfo = new RaycastHit();
             bool isHit = Physics.Raycast(ray, out hitInfo);
 
             if (isHit)
             {
-                BulletEffect.transform.position = hitInfo.point;
-                BulletEffect.transform.forward = hitInfo.normal;
-                BulletEffect.Play();
+                var bulletEffect = poolManager.GetFromPool<BulletEffect>();
+                bulletEffect.transform.position = hitInfo.point;
+                bulletEffect.transform.forward = hitInfo.normal;
 
-                //Instantiate(BulletEffect, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+  
+
+                //BulletEffect.transform.position = hitInfo.point;
+                //BulletEffect.transform.forward = hitInfo.normal;
+                //BulletEffect.Play();
 
                 Debug.Log("Hit: " + hitInfo.collider.name);
             }
@@ -66,42 +71,56 @@ public class PlayerFire : MonoBehaviour
                 Debug.Log("Miss");
             }
             bulletCount--;
+            currentFirerate = 0f;
             PlayerUI.Instance.SetBulletCount(bulletCount, stats.MaxBullets);
         }
 
-        //Æø
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButton(1))
         {
-            if(bombCount <= 0 || isReloading)
-            {
-                Debug.Log("No Bombs Left");
+            if (bombCount <= 0 || isReloading)
                 return;
+
+            currentThrowForce += Time.deltaTime * stats.MaxThrowForce;
+            currentThrowForce = Mathf.Clamp(currentThrowForce, 0, stats.MaxThrowForce);
+            PlayerUI.Instance.UpdateThrowForceUI(currentThrowForce, stats.MaxThrowForce);
+        }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            if (bombCount <= 0 || isReloading)
+                return;
+
+            if (poolManager != null)
+            {
+                var bomb = poolManager.GetFromPool<Bomb>();
+                bomb.transform.position = FirePos.transform.position;
+                bomb.transform.rotation = FirePos.transform.rotation;
+
+                // ï¿½ï¿½Åºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ß°ï¿½
+                var bombRigid = bomb.GetComponent<Rigidbody>();
+                bombRigid.linearVelocity = Vector3.zero; 
+                bombRigid.angularVelocity = Vector3.zero; 
+                bombRigid.AddForce(FirePos.transform.forward * currentThrowForce, ForceMode.Impulse);
+                bombRigid.AddTorque(Vector3.one);
             }
 
-            GameObject bomb = Instantiate(BombPrefab, FirePos.transform.position, FirePos.transform.rotation);
-            Rigidbody bombRigid = bomb.GetComponent<Rigidbody>();
-
-            bombRigid.AddForce(FirePos.transform.forward * throwForce, ForceMode.Impulse);
-            bombRigid.AddTorque(Vector3.one);
             bombCount--;
+            currentThrowForce = 0f;
             PlayerUI.Instance.SetBombCount(bombCount, stats.MaxBombs);
         }
-
-        if(Input.GetMouseButtonUp(1))
-        {
-
-        }
-
     }
 
     private IEnumerator Reload()
     {
         if (isReloading)
             yield break;
+
         isReloading = true;
         Debug.Log("Reloading...");
         StartCoroutine(PlayerUI.Instance.ReloadProgress(stats.ReloadTime));
+
         yield return new WaitForSeconds(stats.ReloadTime);
+
         bulletCount = stats.MaxBullets;
         bombCount = stats.MaxBombs;
         PlayerUI.Instance.SetBulletCount(bulletCount, stats.MaxBullets);
@@ -113,13 +132,8 @@ public class PlayerFire : MonoBehaviour
     {
         if (FirePos != null)
         {
-            // Gizmo »ö»ó ¼³Á¤
             Gizmos.color = Color.red;
-
-            // ½î´Â ¹æÇâÀ¸·Î ¼± ±×¸®±â
             Gizmos.DrawLine(FirePos.transform.position, FirePos.transform.position + FirePos.transform.forward * 5f);
-
-            // ½ÃÀÛ ÁöÁ¡¿¡ ±¸Ã¼ ±×¸®±â
             Gizmos.DrawSphere(FirePos.transform.position, 0.1f);
         }
     }

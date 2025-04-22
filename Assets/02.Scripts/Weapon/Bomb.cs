@@ -1,12 +1,37 @@
+using Redcode.Pools;
 using UnityEngine;
 
-public class Bomb : MonoBehaviour
+public class Bomb : MonoBehaviour, IPoolObject
 {
-    public GameObject ExplosionEffectPrefab;
+    private PoolManager _poolManager;
+
+    private void Awake()
+    {
+        _poolManager = Object.FindFirstObjectByType<PoolManager>();
+    }
+
+
+    public void OnCreatedInPool()
+    {
+    }
+
+    public void OnGettingFromPool()
+    {
+        gameObject.SetActive(true);
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
-        Instantiate(ExplosionEffectPrefab, transform.position, Quaternion.identity);
-        Destroy(gameObject);
+        if (_poolManager != null)
+        {
+            var explosionEffect = _poolManager.GetFromPool<ExplosionEffect>();
+            explosionEffect.transform.position = transform.position;
+            explosionEffect.transform.rotation = Quaternion.identity;
+        }
+
+        if (_poolManager != null)
+            _poolManager.TakeToPool<Bomb>(this);
+        else
+            Destroy(gameObject);
     }
 }

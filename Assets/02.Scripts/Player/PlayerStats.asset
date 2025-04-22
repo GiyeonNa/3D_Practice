@@ -13,6 +13,16 @@ MonoBehaviour:
   m_Name: PlayerStats
   m_EditorClassIdentifier: 
   MoveSpeed: 7
+  DashSpeed: 12
   JumpPower: 5
   MaxStamina: 100
   RollSpeed: 1
+  ClimbStaminaCost: 20
+  DashStaminaCost: 20
+  RollStaminaCost: 10
+  StaminaRecoveryRate: 5
+  MaxBullets: 50
+  MaxBombs: 3
+  ReloadTime: 2
+  MaxThrowForce: 25
+  FireRate: 0.2

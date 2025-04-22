@@ -17,6 +17,8 @@ public class PlayerUI : MonoBehaviour
     private Image crosshairImage;
     [SerializeField]
     private Image reloadImage;
+    [SerializeField]
+    private Image throwForceImage;
 
 
     private void Awake()
@@ -49,6 +51,8 @@ public class PlayerUI : MonoBehaviour
         crosshairImage.gameObject.SetActive(true);
     }
 
+   
+
     #region bullet
     public void SetBulletCount(int count, int maxcount)
     {
@@ -62,6 +66,17 @@ public class PlayerUI : MonoBehaviour
     {
         if (bombCountText != null)
             bombCountText.text = count + "/" + maxcount;
+
+        if (throwForceImage != null)
+            throwForceImage.gameObject.SetActive(false);
+    }
+    public void UpdateThrowForceUI(float currentForce, float maxForce)
+    {
+        if (throwForceImage != null)
+        {
+            throwForceImage.gameObject.SetActive(true);
+            throwForceImage.fillAmount = currentForce / maxForce;
+        }
     }
     #endregion
 }

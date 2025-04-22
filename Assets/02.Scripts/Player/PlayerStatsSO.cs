@@ -3,18 +3,27 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PlayerStats", menuName = "ScriptableObjects/PlayerStats", order = 1)]
 public class PlayerStatsSO : ScriptableObject
 {
-    public float MoveSpeed = 7f;
-    public float DashSpeed = 12f;
-    public float JumpPower = 5f;
-    public float MaxStamina = 100f;
-    public float RollSpeed = 1f;
-    public float ClimbStaminaCost = 20f; 
-    public float DashStaminaCost = 20f; 
-    public float RollStaminaCost = 10f; 
-    public float StaminaRecoveryRate = 5f;
-    public int MaxBullets = 50;
-    public int MaxBombs = 3;
-    public float ReloadTime = 2f;
+    [Header("Player Stats")]
+    #region Stats
+    public float MoveSpeed;
+    public float DashSpeed;
+    public float JumpPower;
+    public float MaxStamina;
+    public float RollSpeed;
+    public float ClimbStaminaCost;
+    public float DashStaminaCost;
+    public float RollStaminaCost;
+    public float StaminaRecoveryRate;
+    #endregion
+
+    [Header("Combat")]
+    #region Combat
+    public int MaxBullets;
+    public int MaxBombs;
+    public float ReloadTime;
+    public float MaxThrowForce;
+    public float FireRate;
+    #endregion
 
 }
 
