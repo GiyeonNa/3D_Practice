@@ -12,6 +12,9 @@ public class PlayerStatsSO : ScriptableObject
     public float DashStaminaCost = 20f; 
     public float RollStaminaCost = 10f; 
     public float StaminaRecoveryRate = 5f;
+    public int MaxBullets = 50;
+    public int MaxBombs = 3;
+    public float ReloadTime = 2f;
 
 }
 
