@@ -37,9 +37,13 @@ public class CameraManager : MonoBehaviour
             return;
 
         // 모든 카메라 비활성화
+        //for (int i = 0; i < virtualCameras.Length; i++)
+        //{
+        //    virtualCameras[i].Priority = (i == index) ? 10 : 0;
+        //}
         for (int i = 0; i < virtualCameras.Length; i++)
         {
-            virtualCameras[i].Priority = (i == index) ? 10 : 0;
+            virtualCameras[i].gameObject.SetActive(i == index);
         }
 
         currentCameraIndex = index;
