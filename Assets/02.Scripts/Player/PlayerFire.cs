@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
-using Redcode.Pools; // PoolManager�� ����ϱ� ���� �߰�
+using Redcode.Pools;
+using NUnit.Framework.Constraints;
 
 public class PlayerFire : MonoBehaviour
 {
@@ -52,19 +53,29 @@ public class PlayerFire : MonoBehaviour
             RaycastHit hitInfo = new RaycastHit();
             bool isHit = Physics.Raycast(ray, out hitInfo);
 
+            if (hitInfo.collider.CompareTag("Player"))
+                return;
+
             if (isHit)
             {
                 var bulletEffect = poolManager.GetFromPool<BulletEffect>();
                 bulletEffect.transform.position = hitInfo.point;
                 bulletEffect.transform.forward = hitInfo.normal;
 
-  
-
-                //BulletEffect.transform.position = hitInfo.point;
-                //BulletEffect.transform.forward = hitInfo.normal;
-                //BulletEffect.Play();
-
                 Debug.Log("Hit: " + hitInfo.collider.name);
+
+                if(hitInfo.collider.CompareTag("Enemy"))
+                {
+                    var enemy = hitInfo.collider.GetComponent<Enemy>();
+                    if (enemy != null)
+                    {
+                        Damage damage = new Damage();
+                        damage.Value = 20;
+                        damage.From = this.gameObject;
+                        enemy.TakeDamage(damage);
+                    }
+                }
+
             }
             else
             {
@@ -96,7 +107,6 @@ public class PlayerFire : MonoBehaviour
                 bomb.transform.position = FirePos.transform.position;
                 bomb.transform.rotation = FirePos.transform.rotation;
 
-                // ��ź�� ������ �� �߰�
                 var bombRigid = bomb.GetComponent<Rigidbody>();
                 bombRigid.linearVelocity = Vector3.zero; 
                 bombRigid.angularVelocity = Vector3.zero; 

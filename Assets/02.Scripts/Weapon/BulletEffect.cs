@@ -20,8 +20,8 @@ public class BulletEffect : MonoBehaviour, IPoolObject
     public void OnGettingFromPool()
     {
         gameObject.SetActive(true);
-        Invoke("ReturnToPool", 1f);
     }
+
     private void OnParticleSystemStopped()
     {
         ReturnToPool();
@@ -30,12 +30,8 @@ public class BulletEffect : MonoBehaviour, IPoolObject
     private void ReturnToPool()
     {
         if (poolManager != null)
-        {
             poolManager.TakeToPool<BulletEffect>(this);
-        }
         else
-        {
-            Destroy(gameObject); // 풀 매니저가 없으면 파괴
-        }
+            Destroy(gameObject);
     }
 }
