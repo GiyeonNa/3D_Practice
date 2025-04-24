@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public enum EnemyState
 {
@@ -24,6 +25,7 @@ public class Enemy : MonoBehaviour
     private float patrolCurrentTime;
     private Vector3? currentTargetPos = null;
     private Vector3 knockbackDirection;
+    private NavMeshAgent agent;
 
     [Header("Enemy Info")]
     public int Health;
@@ -37,9 +39,11 @@ public class Enemy : MonoBehaviour
     public List<Vector3> PatrolPosList = new List<Vector3>(); 
     public float PatrolChangeTime;
     public float KnockbackForce;
+   
 
     private void Start()
     {
+        agent = gameObject.GetComponent<NavMeshAgent>();
         startPos = transform.position;
         characterController = GetComponent<CharacterController>();
         player = GameObject.FindGameObjectWithTag("Player");
@@ -125,9 +129,10 @@ public class Enemy : MonoBehaviour
 
         Vector3 direction = player.transform.position - transform.position;
         direction.Normalize();
-        characterController.Move(direction * MoveSpeedf * Time.deltaTime);
+        //characterController.Move(direction * MoveSpeedf * Time.deltaTime);
+        agent.SetDestination(player.transform.position);
 
- 
+
     }
     private void Patrol()
     {
@@ -189,7 +194,8 @@ public class Enemy : MonoBehaviour
 
         Vector3 direction = startPos - transform.position;
         direction.Normalize();
-        characterController.Move(direction * MoveSpeedf * Time.deltaTime);
+        //characterController.Move(direction * MoveSpeedf * Time.deltaTime);
+        agent.SetDestination(startPos); 
 
     }
     private void Damaged()

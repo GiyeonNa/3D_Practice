@@ -17,10 +17,12 @@ public class PlayerFire : MonoBehaviour
     private int bombCount;
     private float currentThrowForce;
     private float currentFirerate;
+    private bool isUIActive = false;
 
     private void Awake()
     {
-        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.lockState = CursorLockMode.Confined;
+        //Cursor.lockState = CursorLockMode.Locked;
         poolManager = Object.FindFirstObjectByType<PoolManager>();
     }
 
@@ -36,6 +38,18 @@ public class PlayerFire : MonoBehaviour
 
     private void Update()
     {
+        // Handle cursor visibility based on ESC key and UI interaction
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            isUIActive = !isUIActive;
+            Cursor.lockState = isUIActive ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = isUIActive;
+        }
+
+        if (isUIActive)
+            return;
+
+        // Existing gameplay logic
         currentFirerate += Time.deltaTime;
 
         if (Input.GetKeyDown(KeyCode.R))
