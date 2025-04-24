@@ -5,6 +5,7 @@ public class PlayerStatsSO : ScriptableObject
 {
     [Header("Player Stats")]
     #region Stats
+    public int MaxHealth;
     public float MoveSpeed;
     public float DashSpeed;
     public float JumpPower;

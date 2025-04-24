@@ -7,7 +7,7 @@ public class Bomb : MonoBehaviour, IPoolObject
 
     private void Awake()
     {
-        _poolManager = Object.FindFirstObjectByType<PoolManager>();
+        _poolManager = Thing.FindFirstObjectByType<PoolManager>();
     }
 
 

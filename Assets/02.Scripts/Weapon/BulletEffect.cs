@@ -9,7 +9,7 @@ public class BulletEffect : MonoBehaviour, IPoolObject
 
     private void Awake()
     {
-        poolManager = Object.FindFirstObjectByType<PoolManager>();
+        poolManager = Thing.FindFirstObjectByType<PoolManager>();
         particleSystem = GetComponent<ParticleSystem>();
     }
 

@@ -2,13 +2,10 @@ using System.Collections;
 using UnityEngine;
 using Redcode.Pools;
 using NUnit.Framework.Constraints;
+using UnityEditor.Experimental.GraphView;
 
 public class PlayerFire : MonoBehaviour
 {
-    [SerializeField]
-    private PlayerStatsSO stats;
-    [SerializeField]
-    private float throwForce;
     public GameObject FirePos;
 
     private PoolManager poolManager;
@@ -23,17 +20,17 @@ public class PlayerFire : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Confined;
         //Cursor.lockState = CursorLockMode.Locked;
-        poolManager = Object.FindFirstObjectByType<PoolManager>();
+        poolManager = Thing.FindFirstObjectByType<PoolManager>();
     }
 
     private void Start()
     {
-        bulletCount = stats.MaxBullets;
-        bombCount = stats.MaxBombs;
+        bulletCount = PlayerManager.Instance.GetInfo().MaxBullets;
+        bombCount = PlayerManager.Instance.GetInfo().MaxBombs;
         currentThrowForce = 0f;
         currentFirerate = 0f;
-        PlayerUI.Instance.SetBulletCount(bulletCount, stats.MaxBullets);
-        PlayerUI.Instance.SetBombCount(bombCount, stats.MaxBombs);
+        PlayerUI.Instance.SetBulletCount(bulletCount, PlayerManager.Instance.GetInfo().MaxBullets);
+        PlayerUI.Instance.SetBombCount(bombCount, PlayerManager.Instance.GetInfo().MaxBombs);
     }
 
     private void Update()
@@ -60,7 +57,7 @@ public class PlayerFire : MonoBehaviour
             if (bulletCount <= 0 || isReloading)
                 return;
 
-            if (currentFirerate < stats.FireRate)
+            if (currentFirerate < PlayerManager.Instance.GetInfo().FireRate)
                 return;
 
             Ray ray = new Ray(FirePos.transform.position, FirePos.transform.forward);
@@ -78,7 +75,7 @@ public class PlayerFire : MonoBehaviour
 
                 Debug.Log("Hit: " + hitInfo.collider.name);
 
-                if(hitInfo.collider.CompareTag("Enemy"))
+                if (hitInfo.collider.CompareTag("Enemy"))
                 {
                     var enemy = hitInfo.collider.GetComponent<Enemy>();
                     if (enemy != null)
@@ -89,7 +86,17 @@ public class PlayerFire : MonoBehaviour
                         enemy.TakeDamage(damage);
                     }
                 }
-
+                else if (hitInfo.collider.CompareTag("Thing"))
+                {
+                    var thing = hitInfo.collider.GetComponent<Thing>();
+                    if (thing != null)
+                    {
+                        Damage damage = new Damage();
+                        damage.Value = 20;
+                        damage.From = this.gameObject;
+                        thing.TakeDamage(damage);
+                    }
+                }
             }
             else
             {
@@ -97,7 +104,7 @@ public class PlayerFire : MonoBehaviour
             }
             bulletCount--;
             currentFirerate = 0f;
-            PlayerUI.Instance.SetBulletCount(bulletCount, stats.MaxBullets);
+            PlayerUI.Instance.SetBulletCount(bulletCount, PlayerManager.Instance.GetInfo().MaxBullets);
         }
 
         if (Input.GetMouseButton(1))
@@ -105,9 +112,9 @@ public class PlayerFire : MonoBehaviour
             if (bombCount <= 0 || isReloading)
                 return;
 
-            currentThrowForce += Time.deltaTime * stats.MaxThrowForce;
-            currentThrowForce = Mathf.Clamp(currentThrowForce, 0, stats.MaxThrowForce);
-            PlayerUI.Instance.UpdateThrowForceUI(currentThrowForce, stats.MaxThrowForce);
+            currentThrowForce += Time.deltaTime * PlayerManager.Instance.GetInfo().MaxThrowForce;
+            currentThrowForce = Mathf.Clamp(currentThrowForce, 0, PlayerManager.Instance.GetInfo().MaxThrowForce);
+            PlayerUI.Instance.UpdateThrowForceUI(currentThrowForce, PlayerManager.Instance.GetInfo().MaxThrowForce);
         }
 
         if (Input.GetMouseButtonUp(1))
@@ -130,7 +137,7 @@ public class PlayerFire : MonoBehaviour
 
             bombCount--;
             currentThrowForce = 0f;
-            PlayerUI.Instance.SetBombCount(bombCount, stats.MaxBombs);
+            PlayerUI.Instance.SetBombCount(bombCount, PlayerManager.Instance.GetInfo().MaxBombs);
         }
     }
 
@@ -141,14 +148,14 @@ public class PlayerFire : MonoBehaviour
 
         isReloading = true;
         Debug.Log("Reloading...");
-        StartCoroutine(PlayerUI.Instance.ReloadProgress(stats.ReloadTime));
+        StartCoroutine(PlayerUI.Instance.ReloadProgress(PlayerManager.Instance.GetInfo().ReloadTime));
 
-        yield return new WaitForSeconds(stats.ReloadTime);
+        yield return new WaitForSeconds(PlayerManager.Instance.GetInfo().ReloadTime);
 
-        bulletCount = stats.MaxBullets;
-        bombCount = stats.MaxBombs;
-        PlayerUI.Instance.SetBulletCount(bulletCount, stats.MaxBullets);
-        PlayerUI.Instance.SetBombCount(bombCount, stats.MaxBombs);
+        bulletCount = PlayerManager.Instance.GetInfo().MaxBullets;
+        bombCount = PlayerManager.Instance.GetInfo().MaxBombs;
+        PlayerUI.Instance.SetBulletCount(bulletCount, PlayerManager.Instance.GetInfo().MaxBullets);
+        PlayerUI.Instance.SetBombCount(bombCount, PlayerManager.Instance.GetInfo().MaxBombs);
         isReloading = false;
     }
 
