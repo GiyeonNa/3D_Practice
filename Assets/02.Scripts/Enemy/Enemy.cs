@@ -3,20 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public enum EnemyState
+ public class Enemy : MonoBehaviour
 {
-    Idle,
-    Trace,
-    Patrol,
-    Attack,
-    Return,
-    Damaged,
-    Dead
-}
-
-public class Enemy : MonoBehaviour
-{
-    public EnemyState CurrentState = EnemyState.Idle;
+    public eEnemyState CurrentState = eEnemyState.Idle;
 
     private GameObject player;
     private CharacterController characterController;
@@ -57,37 +46,37 @@ public class Enemy : MonoBehaviour
     {
         switch(CurrentState)
         {
-            case EnemyState.Idle:
+            case eEnemyState.Idle:
             {
                 Idle();
                 break;
             }
-            case EnemyState.Trace:
+            case eEnemyState.Trace:
             {
                 Trace();
                 break;
             }
-            case EnemyState.Patrol:
+            case eEnemyState.Patrol:
             {
                 Patrol();
                 break;
             }
-            case EnemyState.Attack:
+            case eEnemyState.Attack:
             {
                 Attack();
                 break;
             }
-            case EnemyState.Return:
+            case eEnemyState.Return:
             {
                 Return();
                 break;
             }
-            case EnemyState.Damaged:
+            case eEnemyState.Damaged:
             {
                 Damaged();
                 break;
             }
-            case EnemyState.Dead:
+            case eEnemyState.Dead:
             {
                 Dead();
                 break;
@@ -103,13 +92,13 @@ public class Enemy : MonoBehaviour
         if (Vector3.Distance(transform.position, player.transform.position) < FindDistance)
         {
             patrolCurrentTime = 0f;
-            CurrentState = EnemyState.Trace;
+            CurrentState = eEnemyState.Trace;
         }
 
         if (patrolCurrentTime >= PatrolChangeTime)
         {
             patrolCurrentTime = 0f;
-            CurrentState = EnemyState.Patrol;
+            CurrentState = eEnemyState.Patrol;
         }
     }
 
@@ -117,13 +106,13 @@ public class Enemy : MonoBehaviour
     {
         if (Vector3.Distance(transform.position, player.transform.position) >= ReturnDistance)
         {
-            CurrentState = EnemyState.Return;
+            CurrentState = eEnemyState.Return;
             return;
         }
 
         if (Vector3.Distance(transform.position, player.transform.position) < AttackDistance)
         {
-            CurrentState = EnemyState.Attack;
+            CurrentState = eEnemyState.Attack;
             return;
         }
 
@@ -138,7 +127,7 @@ public class Enemy : MonoBehaviour
     {
         if (Vector3.Distance(transform.position, player.transform.position) < FindDistance)
         {
-            CurrentState = EnemyState.Trace;
+            CurrentState = eEnemyState.Trace;
             return;
         }
 
@@ -163,7 +152,7 @@ public class Enemy : MonoBehaviour
     {
         if (Vector3.Distance(transform.position, player.transform.position) >= AttackDistance)
         {
-            CurrentState = EnemyState.Trace;
+            CurrentState = eEnemyState.Trace;
             //attackCurrentTime = 0f;
             return;
         }
@@ -182,13 +171,13 @@ public class Enemy : MonoBehaviour
         if (Vector3.Distance(transform.position, startPos) <= 0.1f)
         {
             transform.position = startPos;
-            CurrentState = EnemyState.Idle;
+            CurrentState = eEnemyState.Idle;
             return;
         }
 
         if (Vector3.Distance(transform.position, player.transform.position) < FindDistance)
         {
-            CurrentState = EnemyState.Trace;
+            CurrentState = eEnemyState.Trace;
             return;
         }
 
@@ -204,7 +193,7 @@ public class Enemy : MonoBehaviour
         if (DamageTimer >= DamagedDelayTime)
         {
             DamageTimer = 0f;
-            CurrentState = EnemyState.Trace;
+            CurrentState = eEnemyState.Trace;
         }
         characterController.Move(knockbackDirection * KnockbackForce * Time.deltaTime);
     }
@@ -220,11 +209,11 @@ public class Enemy : MonoBehaviour
         Health -= damage.Value;
         if (Health <= 0)
         {
-            CurrentState = EnemyState.Dead;
+            CurrentState = eEnemyState.Dead;
         }
         else
         {
-            CurrentState = EnemyState.Damaged;
+            CurrentState = eEnemyState.Damaged;
 
             // Calculate knockback direction
             if (damage.From != null)
