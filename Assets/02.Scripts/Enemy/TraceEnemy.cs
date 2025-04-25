@@ -1,26 +1,25 @@
-using NUnit.Framework.Constraints;
 using UnityEngine;
-using UnityEngine.Rendering;
+
 
 public class TraceEnemy : Enemy
 {
-    private TraceEnemyFSM traceEnemyFSM;
-
-
     private void Awake()
     {
-        traceEnemyFSM = GetComponent<TraceEnemyFSM>();
-        traceEnemyFSM.MakeFSM(this);
+        // FSM 초기화
+        TraceEnemyFsmFactory fsmFactory = new TraceEnemyFsmFactory();
+        EnemyFSM = fsmFactory.CreateEnemyFsm(this);
     }
 
     protected override void Start()
-    { 
-        base.Start();
-    }
-
-    public TraceEnemyFSM GetFSM()
     {
-        return traceEnemyFSM;
+        base.Start();
+        // 초기 상태 설정 (예: Trace 상태)
+        EnemyFSM.SetState(eEnemyState.Trace);
     }
 
+    private void Update()
+    {
+        // FSM 업데이트
+        EnemyFSM.Update();
+    }
 }

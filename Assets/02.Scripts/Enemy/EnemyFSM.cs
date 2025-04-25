@@ -1,36 +1,27 @@
-using System;
 using UnityEngine;
 
-public class EnemyFSM
+public class EnemyFsm : Fsm<eEnemyState>
 {
-    private Fsm<eEnemyState> fsm;
-    public Enemy enemy;
+    public Enemy traceEnemy;
 
-    public EnemyFSM(Enemy _enemy)
+    public EnemyFsm(Enemy traceEnemy)
     {
-        enemy = _enemy;
-        fsm = FsmFactory.CreateFsm<eEnemyState>();
-
-        // Add states
-        FsmFactory.AddState(fsm, new IdleState());
-        FsmFactory.AddState(fsm, new TraceState());
-        FsmFactory.AddState(fsm, new PatrolState());
-        FsmFactory.AddState(fsm, new AttackState());
-        FsmFactory.AddState(fsm, new ReturnState());
-        FsmFactory.AddState(fsm, new DamagedState());
-        FsmFactory.AddState(fsm, new DeadState());
-
-        // Set initial state
-        FsmFactory.SetInitialState(fsm, eEnemyState.Idle);
+        this.traceEnemy = traceEnemy;
     }
 
-    public void Update()
+    public override void Update()
     {
-        fsm.Update();
+        base.Update();
     }
 
-    public void SetState(eEnemyState state)
+    public bool IsState(eEnemyState state)
     {
-        fsm.SetState(state);
+        if (curState.getState.Equals(state))
+            return true;
+
+        if (nextState.getState.Equals(state))
+            return true;
+
+        return false;
     }
 }

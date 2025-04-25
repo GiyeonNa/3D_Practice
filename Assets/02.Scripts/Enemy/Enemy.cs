@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
- public abstract class Enemy : MonoBehaviour
+public abstract class Enemy : MonoBehaviour
 {
-
+    protected EnemyFsm EnemyFSM;
     protected GameObject player;
     protected CharacterController characterController;
     protected Vector3 startPos;
