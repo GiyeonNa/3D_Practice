@@ -3,18 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
- public class Enemy : MonoBehaviour
+ public abstract class Enemy : MonoBehaviour
 {
-    public eEnemyState CurrentState = eEnemyState.Idle;
 
-    private GameObject player;
-    private CharacterController characterController;
-    private Vector3 startPos;
-    private float attackCurrentTime;
-    private float patrolCurrentTime;
-    private Vector3? currentTargetPos = null;
-    private Vector3 knockbackDirection;
-    private NavMeshAgent agent;
+    protected GameObject player;
+    protected CharacterController characterController;
+    protected Vector3 startPos;
+    protected float attackCurrentTime;
+    protected float patrolCurrentTime;
+    protected Vector3? currentTargetPos = null;
+    protected Vector3 knockbackDirection;
+    protected NavMeshAgent agent;
 
     [Header("Enemy Info")]
     public int Health;
@@ -30,7 +29,7 @@ using UnityEngine.AI;
     public float KnockbackForce;
    
 
-    private void Start()
+    protected virtual void Start()
     {
         agent = gameObject.GetComponent<NavMeshAgent>();
         startPos = transform.position;
@@ -42,188 +41,22 @@ using UnityEngine.AI;
         }
     }
 
-    private void Update()
-    {
-        switch(CurrentState)
-        {
-            case eEnemyState.Idle:
-            {
-                Idle();
-                break;
-            }
-            case eEnemyState.Trace:
-            {
-                Trace();
-                break;
-            }
-            case eEnemyState.Patrol:
-            {
-                Patrol();
-                break;
-            }
-            case eEnemyState.Attack:
-            {
-                Attack();
-                break;
-            }
-            case eEnemyState.Return:
-            {
-                Return();
-                break;
-            }
-            case eEnemyState.Damaged:
-            {
-                Damaged();
-                break;
-            }
-            case eEnemyState.Dead:
-            {
-                Dead();
-                break;
-            }
-
-        }
-    }
-
-    #region State Methods
-    private void Idle()
-    {
-        patrolCurrentTime += Time.deltaTime;
-        if (Vector3.Distance(transform.position, player.transform.position) < FindDistance)
-        {
-            patrolCurrentTime = 0f;
-            CurrentState = eEnemyState.Trace;
-        }
-
-        if (patrolCurrentTime >= PatrolChangeTime)
-        {
-            patrolCurrentTime = 0f;
-            CurrentState = eEnemyState.Patrol;
-        }
-    }
-
-    private void Trace()
-    {
-        if (Vector3.Distance(transform.position, player.transform.position) >= ReturnDistance)
-        {
-            CurrentState = eEnemyState.Return;
-            return;
-        }
-
-        if (Vector3.Distance(transform.position, player.transform.position) < AttackDistance)
-        {
-            CurrentState = eEnemyState.Attack;
-            return;
-        }
-
-        Vector3 direction = player.transform.position - transform.position;
-        direction.Normalize();
-        //characterController.Move(direction * MoveSpeedf * Time.deltaTime);
-        agent.SetDestination(player.transform.position);
-
-
-    }
-    private void Patrol()
-    {
-        if (Vector3.Distance(transform.position, player.transform.position) < FindDistance)
-        {
-            CurrentState = eEnemyState.Trace;
-            return;
-        }
-
-        if (PatrolPosList.Count > 0)
-        {
-            if (currentTargetPos == null || Vector3.Distance(transform.position, currentTargetPos.Value) <= 0.1f)
-            {
-                List<Vector3> availableTargets = new List<Vector3>(PatrolPosList);
-
-                if (currentTargetPos != null)
-                    availableTargets.Remove(currentTargetPos.Value);
-
-                currentTargetPos = availableTargets[Random.Range(0, availableTargets.Count)];
-            }
-
-            Vector3 direction = currentTargetPos.Value - transform.position;
-            direction.Normalize();
-            characterController.Move(direction * MoveSpeedf * Time.deltaTime);
-        }
-    }
-    private void Attack()
-    {
-        if (Vector3.Distance(transform.position, player.transform.position) >= AttackDistance)
-        {
-            CurrentState = eEnemyState.Trace;
-            //attackCurrentTime = 0f;
-            return;
-        }
-        if (attackCurrentTime <= 0)
-        {
-            Debug.Log("Attack");
-            attackCurrentTime = AttackDelayTime;
-        }
-        else
-        {
-            attackCurrentTime -= Time.deltaTime;
-        }
-    }
-    private void Return()
-    {
-        if (Vector3.Distance(transform.position, startPos) <= 0.1f)
-        {
-            transform.position = startPos;
-            CurrentState = eEnemyState.Idle;
-            return;
-        }
-
-        if (Vector3.Distance(transform.position, player.transform.position) < FindDistance)
-        {
-            CurrentState = eEnemyState.Trace;
-            return;
-        }
-
-        Vector3 direction = startPos - transform.position;
-        direction.Normalize();
-        //characterController.Move(direction * MoveSpeedf * Time.deltaTime);
-        agent.SetDestination(startPos); 
-
-    }
-    private void Damaged()
-    {
-        DamageTimer += Time.deltaTime;
-        if (DamageTimer >= DamagedDelayTime)
-        {
-            DamageTimer = 0f;
-            CurrentState = eEnemyState.Trace;
-        }
-        characterController.Move(knockbackDirection * KnockbackForce * Time.deltaTime);
-    }
-    private void Dead()
-    {
-        Debug.Log("Enemy is dead");
-        Destroy(gameObject);
-    }
-    #endregion
-
     public void TakeDamage(Damage damage)
     {
         Health -= damage.Value;
-        if (Health <= 0)
-        {
-            CurrentState = eEnemyState.Dead;
-        }
-        else
-        {
-            CurrentState = eEnemyState.Damaged;
-
-            // Calculate knockback direction
-            if (damage.From != null)
-                knockbackDirection = (transform.position - damage.From.transform.position).normalized;
-            else
-                knockbackDirection = Vector3.zero;
-        }
     }
 
-    private void OnDrawGizmos()
+    public virtual GameObject GetPlayer()
+    {
+        return player;
+    }
+
+    public virtual NavMeshAgent GetAgent()
+    {
+        return agent;
+    }
+
+    protected virtual void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, FindDistance);
@@ -247,6 +80,4 @@ using UnityEngine.AI;
         }
 
     }
-
-
 }

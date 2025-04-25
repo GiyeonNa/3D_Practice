@@ -12,7 +12,7 @@ public class EnemyFSM
         fsm = FsmFactory.CreateFsm<eEnemyState>();
 
         // Add states
-        FsmFactory.AddState(fsm, new IdleState(enemy));
+        FsmFactory.AddState(fsm, new IdleState());
         FsmFactory.AddState(fsm, new TraceState());
         FsmFactory.AddState(fsm, new PatrolState());
         FsmFactory.AddState(fsm, new AttackState());
