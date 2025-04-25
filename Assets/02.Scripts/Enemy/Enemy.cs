@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public abstract class Enemy : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public abstract class Enemy : MonoBehaviour
     protected Vector3? currentTargetPos = null;
     protected Vector3 knockbackDirection;
     protected NavMeshAgent agent;
+    [SerializeField]
+    protected Image healthBar;
 
     [Header("Enemy Info")]
     public int Health;
@@ -44,6 +47,11 @@ public abstract class Enemy : MonoBehaviour
     public void TakeDamage(Damage damage)
     {
         Health -= damage.Value;
+        if (Health <= 0)
+        {
+            Destroy(gameObject);
+        }
+        healthBar.fillAmount = (float)Health / 100f;
     }
 
     public virtual GameObject GetPlayer()
