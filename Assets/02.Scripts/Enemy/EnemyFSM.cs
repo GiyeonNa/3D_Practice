@@ -4,8 +4,8 @@ using System.Collections.Generic;
 public class EnemyFsm
 {
     private readonly Enemy _enemy;
-    private IEnemyState _currentState;
-    private readonly Dictionary<eEnemyState, IEnemyState> _states;
+    protected IEnemyState _currentState; // Changed from private to protected
+    protected readonly Dictionary<eEnemyState, IEnemyState> _states; // Changed from private to protected
 
     public EnemyFsm(Enemy enemy)
     {

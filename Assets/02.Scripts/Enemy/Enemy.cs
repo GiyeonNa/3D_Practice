@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum EnemyState
 {
@@ -14,13 +15,11 @@ public enum EnemyState
 
 public class Enemy : MonoBehaviour, IDamageable
 {
-    public EnemyState CurrentState = EnemyState.Idle;
-
     public GameObject player;
-    private CharacterController characterController;
+    protected CharacterController characterController; // Changed from private to protected
+    protected EnemyFsm enemyFSM; // Changed from private to protected
+
     public Vector3 startPos;
-    private float attackCurrentTime;
-    private float patrolCurrentTime;
     private Vector3? currentTargetPos = null;
     public Vector3 knockbackDirection;
 
@@ -37,30 +36,50 @@ public class Enemy : MonoBehaviour, IDamageable
     public float PatrolChangeTime;
     public float KnockbackForce;
 
-    private EnemyFsm enemyFSM; // Add a reference to the EnemyFSM  
+    // Add a reference to the health slider
+    [SerializeField]
+    private Slider healthSlider;
 
     private void Start()
     {
-        startPos = transform.position;
-        characterController = GetComponent<CharacterController>();
-        player = GameObject.FindGameObjectWithTag("Player");
-        if (player == null)
-        {
-            Debug.LogError("Player not found");
-        }
-
-        enemyFSM = new EnemyFsm(this); // Initialize the EnemyFSM with a reference to this Enemy instance  
+        InitializeEnemy();
     }
 
     private void Update()
     {
-        // Delegate behavior to FSM  
         enemyFSM.Update();
     }
 
     public void TakeDamage(Damage damage)
     {
+        ApplyDamage(damage);
+    }
+
+    private void OnDrawGizmos()
+    {
+        DrawGizmos();
+    }
+
+    // Initialization logic
+    protected virtual void InitializeEnemy() // Changed from private to protected virtual
+    {
+        startPos = transform.position;
+        characterController = GetComponent<CharacterController>();
+        player = GameObject.FindGameObjectWithTag("Player");
+        enemyFSM = new EnemyFsm(this);
+    }
+
+
+    private void ApplyDamage(Damage damage)
+    {
         Health -= damage.Value;
+
+        // Update the health slider
+        if (healthSlider != null)
+        {
+            healthSlider.value = (float)Health / 100; // Assuming max health is 100
+        }
+
         if (Health <= 0)
         {
             enemyFSM.ChangeState(eEnemyState.Dead);
@@ -68,16 +87,24 @@ public class Enemy : MonoBehaviour, IDamageable
         else
         {
             enemyFSM.ChangeState(eEnemyState.Damaged);
-
-            // Calculate knockback direction  
-            if (damage.From != null)
-                knockbackDirection = (transform.position - damage.From.transform.position).normalized;
-            else
-                knockbackDirection = Vector3.zero;
+            CalculateKnockback(damage);
         }
     }
 
-    private void OnDrawGizmos()
+
+    private void CalculateKnockback(Damage damage)
+    {
+        if (damage.From != null)
+        {
+            knockbackDirection = (transform.position - damage.From.transform.position).normalized;
+        }
+        else
+        {
+            knockbackDirection = Vector3.zero;
+        }
+    }
+
+    private void DrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, FindDistance);
@@ -88,7 +115,6 @@ public class Enemy : MonoBehaviour, IDamageable
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, ReturnDistance);
 
-        // Patrol Points  
         Gizmos.color = Color.yellow;
         for (int i = 0; i < PatrolPosList.Count; i++)
         {
@@ -99,7 +125,5 @@ public class Enemy : MonoBehaviour, IDamageable
             }
         }
     }
-
- 
 }
 

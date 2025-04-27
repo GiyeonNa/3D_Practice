@@ -64,6 +64,9 @@ public class PlayerFire : MonoBehaviour
             RaycastHit hitInfo = new RaycastHit();
             bool isHit = Physics.Raycast(ray, out hitInfo);
 
+            if (hitInfo.collider == null)
+                return;
+
             if (hitInfo.collider.CompareTag("Player"))
                 return;
 
