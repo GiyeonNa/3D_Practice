@@ -1,27 +1,45 @@
-using UnityEngine;
+using System;
+using System.Collections.Generic;
 
-public class EnemyFsm : Fsm<eEnemyState>
+public class EnemyFsm
 {
-    public Enemy traceEnemy;
+    private readonly Enemy _enemy;
+    private IEnemyState _currentState;
+    private readonly Dictionary<eEnemyState, IEnemyState> _states;
 
-    public EnemyFsm(Enemy traceEnemy)
+    public EnemyFsm(Enemy enemy)
     {
-        this.traceEnemy = traceEnemy;
+        _enemy = enemy;
+        _states = new Dictionary<eEnemyState, IEnemyState>
+        {
+            { eEnemyState.Idle, new IdleState(_enemy, this) },
+            { eEnemyState.Trace, new TraceState(_enemy, this) },
+            { eEnemyState.Patrol, new PatrolState(_enemy, this) },
+            { eEnemyState.Attack, new AttackState(_enemy, this) },
+            { eEnemyState.Return, new ReturnState(_enemy, this) },
+            { eEnemyState.Damaged, new DamagedState(_enemy, this) },
+            { eEnemyState.Dead, new DeadState(_enemy, this) }
+        };
+
+        _currentState = _states[eEnemyState.Idle];
     }
 
-    public override void Update()
+    public void ChangeState(eEnemyState newState)
     {
-        base.Update();
+        _currentState.Exit();
+        _currentState = _states[newState];
+        _currentState.Enter();
     }
 
-    public bool IsState(eEnemyState state)
+    public void Update()
     {
-        if (curState.getState.Equals(state))
-            return true;
-
-        if (nextState.getState.Equals(state))
-            return true;
-
-        return false;
+        _currentState.Execute();
     }
+}
+
+public interface IEnemyState
+{
+    void Enter();
+    void Execute();
+    void Exit();
 }

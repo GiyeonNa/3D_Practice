@@ -1,22 +1,28 @@
-using NUnit.Framework;
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.UI;
 
-public abstract class Enemy : MonoBehaviour
+public enum EnemyState
 {
-    protected EnemyFsm EnemyFSM;
-    protected GameObject player;
-    protected CharacterController characterController;
-    protected Vector3 startPos;
-    protected float attackCurrentTime;
-    protected float patrolCurrentTime;
-    protected Vector3? currentTargetPos = null;
-    protected Vector3 knockbackDirection;
-    protected NavMeshAgent agent;
-    [SerializeField]
-    protected Image healthBar;
+    Idle,
+    Trace,
+    Patrol,
+    Attack,
+    Return,
+    Damaged,
+    Dead
+}
+
+public class Enemy : MonoBehaviour, IDamageable
+{
+    public EnemyState CurrentState = EnemyState.Idle;
+
+    public GameObject player;
+    private CharacterController characterController;
+    public Vector3 startPos;
+    private float attackCurrentTime;
+    private float patrolCurrentTime;
+    private Vector3? currentTargetPos = null;
+    public Vector3 knockbackDirection;
 
     [Header("Enemy Info")]
     public int Health;
@@ -27,14 +33,14 @@ public abstract class Enemy : MonoBehaviour
     public float AttackDelayTime;
     public float DamagedDelayTime;
     public float DamageTimer;
-    public List<Vector3> PatrolPosList = new List<Vector3>(); 
+    public List<Vector3> PatrolPosList = new List<Vector3>();
     public float PatrolChangeTime;
     public float KnockbackForce;
-   
 
-    protected virtual void Start()
+    private EnemyFsm enemyFSM; // Add a reference to the EnemyFSM  
+
+    private void Start()
     {
-        agent = gameObject.GetComponent<NavMeshAgent>();
         startPos = transform.position;
         characterController = GetComponent<CharacterController>();
         player = GameObject.FindGameObjectWithTag("Player");
@@ -42,6 +48,14 @@ public abstract class Enemy : MonoBehaviour
         {
             Debug.LogError("Player not found");
         }
+
+        enemyFSM = new EnemyFsm(this); // Initialize the EnemyFSM with a reference to this Enemy instance  
+    }
+
+    private void Update()
+    {
+        // Delegate behavior to FSM  
+        enemyFSM.Update();
     }
 
     public void TakeDamage(Damage damage)
@@ -49,22 +63,21 @@ public abstract class Enemy : MonoBehaviour
         Health -= damage.Value;
         if (Health <= 0)
         {
-            Destroy(gameObject);
+            enemyFSM.ChangeState(eEnemyState.Dead);
         }
-        healthBar.fillAmount = (float)Health / 100f;
+        else
+        {
+            enemyFSM.ChangeState(eEnemyState.Damaged);
+
+            // Calculate knockback direction  
+            if (damage.From != null)
+                knockbackDirection = (transform.position - damage.From.transform.position).normalized;
+            else
+                knockbackDirection = Vector3.zero;
+        }
     }
 
-    public virtual GameObject GetPlayer()
-    {
-        return player;
-    }
-
-    public virtual NavMeshAgent GetAgent()
-    {
-        return agent;
-    }
-
-    protected virtual void OnDrawGizmos()
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, FindDistance);
@@ -75,8 +88,7 @@ public abstract class Enemy : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, ReturnDistance);
 
-
-        //Patrol Points¸¦ º¸¿©ÁÖ±â
+        // Patrol Points  
         Gizmos.color = Color.yellow;
         for (int i = 0; i < PatrolPosList.Count; i++)
         {
@@ -86,6 +98,8 @@ public abstract class Enemy : MonoBehaviour
                 Gizmos.DrawLine(PatrolPosList[i], PatrolPosList[i + 1]);
             }
         }
-
     }
+
+ 
 }
+
