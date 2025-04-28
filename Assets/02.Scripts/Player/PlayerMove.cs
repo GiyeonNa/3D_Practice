@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class PlayerMove : MonoBehaviour
 {
+    public static PlayerMove Instance;
+
     public PlayerStatsSO Stats;
     [SerializeField]
     private float currentStamina;
@@ -12,11 +14,17 @@ public class PlayerMove : MonoBehaviour
     private float _yVelocity = 0f;
     private CharacterController _characterController;
 
+    [SerializeField]
+    private Animator animator;
+
     private bool isDoubleJump = false;
     private bool isClimbing = false;
+    private bool isInjured = false;
 
     private void Awake()
     {
+        Instance = this;
+        animator = GetComponentInChildren<Animator>();
         _characterController = GetComponent<CharacterController>();
         currentStamina = Stats.MaxStamina; 
     } 
@@ -26,6 +34,7 @@ public class PlayerMove : MonoBehaviour
         HandleMovement();
         HandleClimbing();
         HandleStaminaAndSpeed();
+        UpdateAnimatorParameters();
         Jump();
     }
 
@@ -35,7 +44,10 @@ public class PlayerMove : MonoBehaviour
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 
-        Vector3 dir = new Vector3(h, 0, v).normalized;
+        Vector3 dir = new Vector3(h, 0, v);
+
+        animator.SetFloat("MoveAmount", dir.magnitude);
+        dir.Normalize();
         dir = Camera.main.transform.TransformDirection(dir);
 
         if (!isClimbing)
@@ -43,6 +55,8 @@ public class PlayerMove : MonoBehaviour
 
         dir.y = _yVelocity;
         _characterController.Move(dir * moveSpeed * Time.deltaTime);
+
+   
 
         if (_characterController.isGrounded)
             isDoubleJump = false;
@@ -156,5 +170,27 @@ public class PlayerMove : MonoBehaviour
         {
             currentStamina = 0;
         }
+    }
+
+    private void UpdateAnimatorParameters()
+    {
+        // 부상 상태 업데이트
+        animator.SetBool("IsInjured", isInjured);
+
+        // 애니메이션 레이어 가중치 업데이트
+        if (isInjured)
+        {
+            animator.SetLayerWeight(1, 1.0f); // 부상 레이어 활성화
+        }
+        else
+        {
+            animator.SetLayerWeight(1, 0.0f); // 부상 레이어 비활성화
+        }
+    }
+
+    // 외부에서 부상 상태를 설정할 수 있도록 메서드 추가
+    public void SetInjuredState(bool injured)
+    {
+        isInjured = injured;
     }
 }

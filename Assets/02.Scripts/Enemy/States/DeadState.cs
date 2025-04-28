@@ -2,18 +2,19 @@ using UnityEngine;
 
 public class DeadState : IEnemyState
 {
-    private readonly Enemy _enemy;
-    private readonly EnemyFsm _fsm;
+    private readonly Enemy enemy;
+    private readonly EnemyFsm fsm;
 
     public DeadState(Enemy enemy, EnemyFsm fsm)
     {
-        _enemy = enemy;
-        _fsm = fsm;
+        this.enemy = enemy;
+        this.fsm = fsm;
     }
 
     public void Enter()
     {
-        GameObject.Destroy(_enemy.gameObject);
+        enemy.animator.SetTrigger("Die");
+        GameObject.Destroy(enemy.gameObject);
     }
 
     public void Execute()

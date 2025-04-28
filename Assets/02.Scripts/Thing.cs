@@ -3,7 +3,7 @@ using UnityEditor.EditorTools;
 using UnityEngine;
 using System.Collections;
 
-public class Thing : MonoBehaviour, IPoolObject
+public class Thing : MonoBehaviour, IPoolObject, IDamageable
 {
     [SerializeField]
     private float health;

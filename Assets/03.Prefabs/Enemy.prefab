@@ -251,6 +251,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
+  animator: {fileID: 0}
   startPos: {x: 0, y: 0, z: 0}
   knockbackDirection: {x: 0, y: 0, z: 0}
   Health: 0
@@ -264,6 +265,7 @@ MonoBehaviour:
   PatrolPosList: []
   PatrolChangeTime: 0
   KnockbackForce: 0
+  healthSlider: {fileID: 0}
 --- !u!1 &4205392188310877541
 GameObject:
   m_ObjectHideFlags: 0

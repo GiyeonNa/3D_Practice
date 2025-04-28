@@ -2,36 +2,37 @@ using UnityEngine;
 
 public class AttackState : IEnemyState
 {
-    private readonly Enemy _enemy;
-    private readonly EnemyFsm _fsm;
-    private float _attackCurrentTime;
+    private readonly Enemy enemy;
+    private readonly EnemyFsm fsm;
+    private float attackCurrentTime;
 
     public AttackState(Enemy enemy, EnemyFsm fsm)
     {
-        _enemy = enemy;
-        _fsm = fsm;
+        this.enemy = enemy;
+        this.fsm = fsm;
     }
 
     public void Enter()
     {
-        _attackCurrentTime = 0f;
+        enemy.animator.SetTrigger("Attack");
+        attackCurrentTime = 0f;
     }
 
     public void Execute()
     {
-        if (Vector3.Distance(_enemy.transform.position, _enemy.player.transform.position) >= _enemy.AttackDistance)
+        if (Vector3.Distance(enemy.transform.position, enemy.player.transform.position) >= enemy.AttackDistance)
         {
-            _fsm.ChangeState(eEnemyState.Trace);
+            fsm.ChangeState(eEnemyState.Trace);
             return;
         }
 
-        if (_attackCurrentTime <= 0)
+        if (attackCurrentTime <= 0)
         {
-            _attackCurrentTime = _enemy.AttackDelayTime;
+            attackCurrentTime = enemy.AttackDelayTime;
         }
         else
         {
-            _attackCurrentTime -= Time.deltaTime;
+            attackCurrentTime -= Time.deltaTime;
         }
     }
 

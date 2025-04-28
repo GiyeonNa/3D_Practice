@@ -29,13 +29,22 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator Play()
     {
-        yield return new WaitForSecondsRealtime(WaitTime);
+        float remainingTime = WaitTime;
+        while (remainingTime > 0)
+        {
+            PlayerUI.Instance.SetCountdownText(Mathf.CeilToInt(remainingTime));
+            yield return new WaitForSecondsRealtime(1f);
+            remainingTime -= 1f;
+        }
+
+        PlayerUI.Instance.SetCountdownText(0); // Clear countdown text
         State = GameState.Run;
         Time.timeScale = 1f;
     }
 
     public void GameOver()
     {
+        PlayerUI.Instance.SetGameOver();
         State = GameState.Over;
         Time.timeScale = 0f;
     }

@@ -19,6 +19,8 @@ public class Enemy : MonoBehaviour, IDamageable
     protected CharacterController characterController; // Changed from private to protected
     protected EnemyFsm enemyFSM; // Changed from private to protected
 
+    public Animator animator; // Changed from private to protected
+
     public Vector3 startPos;
     private Vector3? currentTargetPos = null;
     public Vector3 knockbackDirection;
@@ -39,6 +41,7 @@ public class Enemy : MonoBehaviour, IDamageable
     // Add a reference to the health slider
     [SerializeField]
     private Slider healthSlider;
+
 
     private void Start()
     {

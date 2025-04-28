@@ -2,30 +2,31 @@ using UnityEngine;
 
 public class DamagedState : IEnemyState
 {
-    private readonly Enemy _enemy;
-    private readonly EnemyFsm _fsm;
-    private float _damageTimer;
+    private readonly Enemy enemy;
+    private readonly EnemyFsm fsm;
+    private float damageTimer;
 
     public DamagedState(Enemy enemy, EnemyFsm fsm)
     {
-        _enemy = enemy;
-        _fsm = fsm;
+        this.enemy = enemy;
+        this.fsm = fsm;
     }
 
     public void Enter()
     {
-        _damageTimer = 0f;
+        enemy.animator.SetTrigger("Hit");
+        damageTimer = 0f;
     }
 
     public void Execute()
     {
-        _damageTimer += Time.deltaTime;
-        if (_damageTimer >= _enemy.DamagedDelayTime)
+        damageTimer += Time.deltaTime;
+        if (damageTimer >= enemy.DamagedDelayTime)
         {
-            _fsm.ChangeState(eEnemyState.Trace);
+            fsm.ChangeState(eEnemyState.Trace);
         }
 
-        _enemy.GetComponent<CharacterController>().Move(_enemy.knockbackDirection * _enemy.KnockbackForce * Time.deltaTime);
+        enemy.GetComponent<CharacterController>().Move(enemy.knockbackDirection * enemy.KnockbackForce * Time.deltaTime);
     }
 
     public void Exit()

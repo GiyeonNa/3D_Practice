@@ -2,32 +2,33 @@ using UnityEngine;
 
 public class IdleState : IEnemyState
 {
-    private readonly Enemy _enemy;
-    private readonly EnemyFsm _fsm;
-    private float _patrolCurrentTime;
+    private readonly Enemy enemy;
+    private readonly EnemyFsm fsm;
+    private float patrolCurrentTime;
 
     public IdleState(Enemy enemy, EnemyFsm fsm)
     {
-        _enemy = enemy;
-        _fsm = fsm;
+        this.enemy = enemy;
+        this.fsm = fsm;
     }
 
     public void Enter()
     {
-        _patrolCurrentTime = 0f;
+        patrolCurrentTime = 0f;
+        enemy.animator.SetTrigger("MoveToIdle");
     }
 
     public void Execute()
     {
-        _patrolCurrentTime += Time.deltaTime;
+        patrolCurrentTime += Time.deltaTime;
 
-        if (Vector3.Distance(_enemy.transform.position, _enemy.player.transform.position) < _enemy.FindDistance)
+        if (Vector3.Distance(enemy.transform.position, enemy.player.transform.position) < enemy.FindDistance)
         {
-            _fsm.ChangeState(eEnemyState.Trace);
+            fsm.ChangeState(eEnemyState.Trace);
         }
-        else if (_patrolCurrentTime >= _enemy.PatrolChangeTime)
+        else if (patrolCurrentTime >= enemy.PatrolChangeTime)
         {
-            _fsm.ChangeState(eEnemyState.Patrol);
+            fsm.ChangeState(eEnemyState.Patrol);
         }
     }
 

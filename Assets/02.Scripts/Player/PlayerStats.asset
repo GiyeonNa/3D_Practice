@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae7557e47d228ec429b8d419e51b1971, type: 3}
   m_Name: PlayerStats
   m_EditorClassIdentifier: 
+  MaxHealth: 150
   MoveSpeed: 7
   DashSpeed: 12
   JumpPower: 5

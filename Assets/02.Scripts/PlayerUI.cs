@@ -10,6 +10,8 @@ public class PlayerUI : MonoBehaviour
     [SerializeField]
     private Image staminaBar;
     [SerializeField]
+    private Image healthBar;
+    [SerializeField]
     private TextMeshProUGUI bulletCountText;
     [SerializeField]
     private TextMeshProUGUI bombCountText;
@@ -19,6 +21,14 @@ public class PlayerUI : MonoBehaviour
     private Image reloadImage;
     [SerializeField]
     private Image throwForceImage;
+    [SerializeField]
+    private Image damagedImage;
+    [SerializeField]
+    private GameObject gameMaskObject;
+    [SerializeField]
+    private TextMeshProUGUI countdownText;
+
+    public Button testButton;
 
 
     private void Awake()
@@ -27,12 +37,27 @@ public class PlayerUI : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+
+        testButton.onClick.AddListener(OnTestButtonClick);
+    }
+    private void OnTestButtonClick()
+    {
+        Damage temp = new Damage();
+        temp.Value = 10;
+        PlayerManager.Instance.TakeDamage(temp);
+
     }
 
     public void SetStamina(float stamina, float maxStamina)
     {
         if (staminaBar != null)
             staminaBar.fillAmount = stamina / maxStamina;
+    }
+
+    public void SetHealth(float health, float maxHealth)
+    {
+        if (healthBar != null)
+            healthBar.fillAmount = health / maxHealth;
     }
 
     public IEnumerator ReloadProgress(float reloadTime)
@@ -51,7 +76,53 @@ public class PlayerUI : MonoBehaviour
         crosshairImage.gameObject.SetActive(true);
     }
 
-   
+    public void SetDamageEffect(float duration = 0.2f)
+    {
+        if (damagedImage != null)
+        {
+            damagedImage.gameObject.SetActive(true);
+            StartCoroutine(DamageEffectCoroutine(duration));
+        }
+    }
+
+    private IEnumerator DamageEffectCoroutine(float duration)
+    {
+        float elapsedTime = 0f;
+        Color originalColor = damagedImage.color;
+
+        while (elapsedTime < duration)
+        {
+            float alpha = Mathf.Lerp(0.5f, 0f, elapsedTime / duration);
+            damagedImage.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    public void SetCountdownText(int seconds)
+    {
+        if (seconds == 0)
+        {
+            gameMaskObject.SetActive(false);
+            return;
+        }
+
+        if (countdownText != null)
+        {
+            gameMaskObject.SetActive(true);
+            string temp = $"Game Ready \n {(seconds > 0 ? seconds.ToString() : string.Empty)}";
+            countdownText.text = temp;
+        }
+    }
+
+    public void SetGameOver()
+    {
+        if (gameMaskObject != null)
+        {
+            gameMaskObject.SetActive(true);
+            countdownText.text = "Game Over!";
+        }
+    }
 
     #region bullet
     public void SetBulletCount(int count, int maxcount)
@@ -79,4 +150,11 @@ public class PlayerUI : MonoBehaviour
         }
     }
     #endregion
+
+
+    public void UpdateWeaponUI(WeaponType weaponType)
+    {
+        // Update the UI to reflect the currently selected weapon
+        // For example, highlight the selected weapon icon
+    }
 }

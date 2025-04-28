@@ -1,6 +1,12 @@
 using UnityEngine;
 
-public class PlayerManager : MonoBehaviour
+public enum WeaponType
+{
+    Gun,
+    Knife
+}
+
+public class PlayerManager : MonoBehaviour, IDamageable
 {
     public static PlayerManager Instance { get; private set; }
 
@@ -8,6 +14,7 @@ public class PlayerManager : MonoBehaviour
     private PlayerStatsSO stats;
 
     public int CurrentHealth { get; private set; }
+    public WeaponType CurrentWeapon { get; private set; }
 
     private void Awake()
     {
@@ -25,6 +32,12 @@ public class PlayerManager : MonoBehaviour
     private void Start()
     {
         InitializePlayerStats();
+        PlayerUI.Instance.SetHealth(CurrentHealth, stats.MaxHealth);
+    }
+
+    private void Update()
+    {
+        HandleWeaponSwap();
     }
 
     private void InitializePlayerStats()
@@ -32,18 +45,43 @@ public class PlayerManager : MonoBehaviour
         CurrentHealth = stats.MaxHealth;
     }
 
+    private void HandleWeaponSwap()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            SwapWeapon(WeaponType.Gun);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            SwapWeapon(WeaponType.Knife);
+        }
+    }
+
+    private void SwapWeapon(WeaponType weaponType)
+    {
+        CurrentWeapon = weaponType;
+        PlayerUI.Instance.UpdateWeaponUI(weaponType);
+    }
+
     public PlayerStatsSO GetInfo()
     {
         return stats;
     }
 
-    public void ReduceHealth(int amount)
+    public void TakeDamage(Damage damage)
     {
-        CurrentHealth -= amount;
+        CurrentHealth -= damage.Value;
+        PlayerUI.Instance.SetHealth(CurrentHealth, stats.MaxHealth);
+
+        if(CurrentHealth <= 50)
+        {
+            PlayerMove.Instance.SetInjuredState(true);
+        }
+
         if (CurrentHealth <= 0)
         {
-            CurrentHealth = 0;
-            Debug.Log("Player is dead.");
+            GameManager.Instance.GameOver();
+            Debug.Log("Player is dead");
         }
     }
 }
