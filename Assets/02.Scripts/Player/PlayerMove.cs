@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 public class PlayerMove : MonoBehaviour
@@ -12,7 +13,7 @@ public class PlayerMove : MonoBehaviour
 
     private const float GRAVITY = -9.8f;
     private float _yVelocity = 0f;
-    private CharacterController _characterController;
+    private CharacterController characterController;
 
     [SerializeField]
     private Animator animator;
@@ -25,7 +26,7 @@ public class PlayerMove : MonoBehaviour
     {
         Instance = this;
         animator = GetComponentInChildren<Animator>();
-        _characterController = GetComponent<CharacterController>();
+        characterController = GetComponent<CharacterController>();
         currentStamina = Stats.MaxStamina; 
     } 
 
@@ -41,12 +42,17 @@ public class PlayerMove : MonoBehaviour
     #region Move
     private void HandleMovement()
     {
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
 
         Vector3 dir = new Vector3(h, 0, v);
 
-        animator.SetFloat("MoveAmount", dir.magnitude);
+        // Update animator parameters for movement
+        animator.SetFloat("MoveX", h);
+        animator.SetFloat("MoveY", v);
+        //animator.SetFloat("MoveAmount", dir.magnitude);
+   
+
         dir.Normalize();
         dir = Camera.main.transform.TransformDirection(dir);
 
@@ -54,12 +60,15 @@ public class PlayerMove : MonoBehaviour
             _yVelocity += GRAVITY * Time.deltaTime;
 
         dir.y = _yVelocity;
-        _characterController.Move(dir * moveSpeed * Time.deltaTime);
+        characterController.Move(dir * moveSpeed * Time.deltaTime);
 
    
 
-        if (_characterController.isGrounded)
+        if (characterController.isGrounded)
+        {
             isDoubleJump = false;
+           
+        }
 
         if (Input.GetKeyDown(KeyCode.E) && currentStamina > 0)
             Roll();
@@ -94,7 +103,7 @@ public class PlayerMove : MonoBehaviour
         }
 
         Vector3 climbDirection = Vector3.up;
-        _characterController.Move(climbDirection * moveSpeed * Time.deltaTime);
+        characterController.Move(climbDirection * moveSpeed * Time.deltaTime);
 
         AdjustStamina(-Time.deltaTime * Stats.ClimbStaminaCost);
         PlayerUI.Instance.SetStamina(currentStamina, Stats.MaxStamina);
@@ -127,7 +136,18 @@ public class PlayerMove : MonoBehaviour
     #region Jump
     private void Jump()
     {
-        if (Input.GetButtonDown("Jump") && _characterController.isGrounded)
+        AnimatorStateInfo currentState = animator.GetCurrentAnimatorStateInfo(0);
+        if (characterController.isGrounded && !currentState.IsName("IsGround"))
+        {
+            animator.SetBool("IsGround", true);
+        }
+        else if (!characterController.isGrounded)
+        {
+            animator.SetBool("IsGround", false);
+        }
+
+
+        if (Input.GetButtonDown("Jump") && characterController.isGrounded)
         {
             _yVelocity = Stats.JumpPower;
         }
@@ -147,14 +167,14 @@ public class PlayerMove : MonoBehaviour
         rollDir.Normalize();
         AdjustStamina(-Stats.RollStaminaCost); 
         PlayerUI.Instance.SetStamina(currentStamina, Stats.MaxStamina);
-        _characterController.Move(rollDir * Stats.MoveSpeed * Stats.RollSpeed * Time.deltaTime);
+        characterController.Move(rollDir * Stats.MoveSpeed * Stats.RollSpeed * Time.deltaTime);
     }
     #endregion
 
     #region Check
     private bool IsNearWall()
     {
-        return _characterController.collisionFlags == CollisionFlags.Sides;
+        return characterController.collisionFlags == CollisionFlags.Sides;
     }
     #endregion
 

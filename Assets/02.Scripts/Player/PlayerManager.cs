@@ -1,8 +1,11 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum WeaponType
 {
     Gun,
+    Boom,
     Knife
 }
 
@@ -13,8 +16,11 @@ public class PlayerManager : MonoBehaviour, IDamageable
     [SerializeField]
     private PlayerStatsSO stats;
 
+    [SerializeField]
+    private List<WeaponSO> weaponList;
+
     public int CurrentHealth { get; private set; }
-    public WeaponType CurrentWeapon { get; private set; }
+    public WeaponSO CurrentWeapon { get; private set; }
 
     private void Awake()
     {
@@ -43,29 +49,70 @@ public class PlayerManager : MonoBehaviour, IDamageable
     private void InitializePlayerStats()
     {
         CurrentHealth = stats.MaxHealth;
+        SwapWeapon(weaponList[0]);
     }
 
     private void HandleWeaponSwap()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        // Handle keyboard input
+        if (Input.GetKeyDown(KeyCode.Alpha1) && weaponList.Count > 0)
         {
-            SwapWeapon(WeaponType.Gun);
+            Debug.Log("Gun Mode");
+            SwapWeapon(weaponList[0]);
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        else if (Input.GetKeyDown(KeyCode.Alpha2) && weaponList.Count > 1)
         {
-            SwapWeapon(WeaponType.Knife);
+            Debug.Log("Boom Mode");
+            SwapWeapon(weaponList[1]);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3) && weaponList.Count > 2)
+        {
+            Debug.Log("Knife Mode");
+            SwapWeapon(weaponList[2]);
+        }
+
+        // Handle mouse wheel input
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        if (scroll > 0f) // Scroll up
+        {
+            CycleWeapon(1);
+        }
+        else if (scroll < 0f) // Scroll down
+        {
+            CycleWeapon(-1);
         }
     }
 
-    private void SwapWeapon(WeaponType weaponType)
+    private void CycleWeapon(int direction)
     {
-        CurrentWeapon = weaponType;
-        PlayerUI.Instance.UpdateWeaponUI(weaponType);
+        if (weaponList == null || weaponList.Count == 0) return;
+
+        int currentIndex = weaponList.IndexOf(CurrentWeapon);
+        int newIndex = (currentIndex + direction + weaponList.Count) % weaponList.Count;
+        SwapWeapon(weaponList[newIndex]);
+    }
+
+    private void SwapWeapon(WeaponSO weaponSO)
+    {
+        if (CurrentWeapon != null)
+        {
+            CurrentWeapon.currentAmmo = PlayerFire.Instance.GetCurrentAmmo(); // Save current ammo
+        }
+
+        CurrentWeapon = weaponSO; // Assign the new weapon
+        CurrentWeapon.InitializeAmmo(); // Ensure ammo is initialized
+        PlayerFire.Instance.UpdateAmmoCount(CurrentWeapon.currentAmmo, CurrentWeapon.MaxAmmo); // Update PlayerFire ammo count
+        PlayerUI.Instance.UpdateWeaponUI(weaponSO); // Ensure UI is updated when weapon is swapped
     }
 
     public PlayerStatsSO GetInfo()
     {
         return stats;
+    }
+
+    public WeaponSO GetWeaponInfo()
+    {
+        return CurrentWeapon;
     }
 
     public void TakeDamage(Damage damage)

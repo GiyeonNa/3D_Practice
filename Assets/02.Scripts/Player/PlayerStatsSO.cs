@@ -17,14 +17,5 @@ public class PlayerStatsSO : ScriptableObject
     public float StaminaRecoveryRate;
     #endregion
 
-    [Header("Combat")]
-    #region Combat
-    public int MaxBullets;
-    public int MaxBombs;
-    public float ReloadTime;
-    public float MaxThrowForce;
-    public float FireRate;
-    #endregion
-
 }
 

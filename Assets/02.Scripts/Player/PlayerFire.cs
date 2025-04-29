@@ -11,11 +11,10 @@ public class PlayerFire : MonoBehaviour
 
     private PoolManager poolManager;
     private bool isReloading = false;
-    private int bulletCount;
-    private int bombCount;
     private float currentThrowForce;
     private float currentFirerate;
     private bool isUIActive = false;
+    private int currentAmmoCount;
 
     [SerializeField]
     private float angle;
@@ -27,6 +26,8 @@ public class PlayerFire : MonoBehaviour
     [SerializeField]
     private Animator animator;
 
+    private bool isZoomMode;
+
     private void Awake()
     {
         if (Instance == null)
@@ -35,23 +36,21 @@ public class PlayerFire : MonoBehaviour
             Destroy(gameObject);
 
         Cursor.lockState = CursorLockMode.Confined;
-        //Cursor.lockState = CursorLockMode.Locked;
         poolManager = Thing.FindFirstObjectByType<PoolManager>();
     }
 
     private void Start()
     {
-        bulletCount = PlayerManager.Instance.GetInfo().MaxBullets;
-        bombCount = PlayerManager.Instance.GetInfo().MaxBombs;
         currentThrowForce = 0f;
         currentFirerate = 0f;
-        PlayerUI.Instance.SetBulletCount(bulletCount, PlayerManager.Instance.GetInfo().MaxBullets);
-        PlayerUI.Instance.SetBombCount(bombCount, PlayerManager.Instance.GetInfo().MaxBombs);
+
+        var weaponInfo = PlayerManager.Instance.GetWeaponInfo();
+        currentAmmoCount = weaponInfo.currentAmmo; // Use current ammo from weapon
+        PlayerUI.Instance.SetAmmoCount(currentAmmoCount, weaponInfo.MaxAmmo);
     }
 
     private void Update()
     {
-        // Handle cursor visibility based on ESC key and UI interaction
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             isUIActive = !isUIActive;
@@ -67,29 +66,38 @@ public class PlayerFire : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
             StartCoroutine(Reload());
 
-        // Handle weapon-specific firing logic
-        if (PlayerManager.Instance.CurrentWeapon == WeaponType.Gun)
+        switch(PlayerManager.Instance.CurrentWeapon.Type)
         {
-            HandleGunFire();
-        }
-        else if (PlayerManager.Instance.CurrentWeapon == WeaponType.Knife)
-        {
-            HandleKnifeAttack();
-        }
+            case WeaponType.Gun:
+                HandleGunFire();
+                break;
 
+            case WeaponType.Knife:
+                HandleKnifeAttack();
+                break;
+
+            case WeaponType.Boom:
+                HandleBoom();
+                break;
+        }
+    }
+
+    private void HandleBoom()
+    {
         if (Input.GetMouseButton(1))
         {
-            if (bombCount <= 0 || isReloading)
+            if (currentAmmoCount <= 0 || isReloading)
                 return;
 
-            currentThrowForce += Time.deltaTime * PlayerManager.Instance.GetInfo().MaxThrowForce;
-            currentThrowForce = Mathf.Clamp(currentThrowForce, 0, PlayerManager.Instance.GetInfo().MaxThrowForce);
-            PlayerUI.Instance.UpdateThrowForceUI(currentThrowForce, PlayerManager.Instance.GetInfo().MaxThrowForce);
+            currentThrowForce += Time.deltaTime * PlayerManager.Instance.GetWeaponInfo().MaxThrowForce;
+            currentThrowForce = Mathf.Clamp(currentThrowForce, 0, PlayerManager.Instance.GetWeaponInfo().MaxThrowForce);
+            PlayerUI.Instance.UpdateThrowForceUI(currentThrowForce, PlayerManager.Instance.GetWeaponInfo().MaxThrowForce);
         }
 
         if (Input.GetMouseButtonUp(1))
         {
-            if (bombCount <= 0 || isReloading)
+
+            if (currentAmmoCount <= 0 || isReloading)
                 return;
 
             if (poolManager != null)
@@ -99,15 +107,17 @@ public class PlayerFire : MonoBehaviour
                 bomb.transform.rotation = FirePos.transform.rotation;
 
                 var bombRigid = bomb.GetComponent<Rigidbody>();
-                bombRigid.linearVelocity = Vector3.zero; 
-                bombRigid.angularVelocity = Vector3.zero; 
+                bombRigid.linearVelocity = Vector3.zero;
+                bombRigid.angularVelocity = Vector3.zero;
                 bombRigid.AddForce(FirePos.transform.forward * currentThrowForce, ForceMode.Impulse);
                 bombRigid.AddTorque(Vector3.one);
             }
 
-            bombCount--;
+            currentAmmoCount--;
+            PlayerManager.Instance.GetWeaponInfo().currentAmmo = currentAmmoCount; // Update weapon's ammo
             currentThrowForce = 0f;
-            PlayerUI.Instance.SetBombCount(bombCount, PlayerManager.Instance.GetInfo().MaxBombs);
+            PlayerUI.Instance.SetAmmoCount(currentAmmoCount, PlayerManager.Instance.GetWeaponInfo().MaxAmmo);
+            PlayerUI.Instance.SetFalseThrowForceUI();
         }
     }
 
@@ -115,13 +125,12 @@ public class PlayerFire : MonoBehaviour
     {
         if (Input.GetMouseButton(0))
         {
-            if (bulletCount <= 0 || isReloading)
+            if (currentAmmoCount <= 0 || isReloading)
                 return;
 
-            if (currentFirerate < PlayerManager.Instance.GetInfo().FireRate)
+            if (currentFirerate < PlayerManager.Instance.GetWeaponInfo().FireRate)
                 return;
 
-            animator.SetTrigger("Shoot");
             Ray ray = new Ray(FirePos.transform.position, FirePos.transform.forward);
             RaycastHit hitInfo = new RaycastHit();
             bool isHit = Physics.Raycast(ray, out hitInfo);
@@ -152,18 +161,35 @@ public class PlayerFire : MonoBehaviour
             {
                 Debug.Log("Miss");
             }
-            bulletCount--;
+            currentAmmoCount--;
             currentFirerate = 0f;
             animator.SetTrigger("Shoot");
-            PlayerUI.Instance.SetBulletCount(bulletCount, PlayerManager.Instance.GetInfo().MaxBullets);
+            PlayerUI.Instance.SetAmmoCount(currentAmmoCount, PlayerManager.Instance.GetWeaponInfo().MaxAmmo);
         }
+
+
+        if (Input.GetMouseButton(1))
+        {
+            isZoomMode = !isZoomMode;
+            PlayerUI.Instance.ZoomImage(isZoomMode);
+        }
+
+
     }
 
     private void HandleKnifeAttack()
     {
         if (Input.GetMouseButtonDown(0))
         {
+            // Retrieve the name of the currently playing animation
+            var currentStateInfo = animator.GetCurrentAnimatorStateInfo(2);
+            if (currentStateInfo.IsName("Slash") && currentStateInfo.normalizedTime < 1.0f)
+            {
+                return; // Return if the 'Slash' animation is already playing
+            }
+
             // Logic for knife attack
+            animator.SetTrigger("Slash");
             Collider[] hitColliders = Physics.OverlapSphere(FirePos.transform.position, range);
             foreach (var hitCollider in hitColliders)
             {
@@ -194,15 +220,25 @@ public class PlayerFire : MonoBehaviour
 
         isReloading = true;
         Debug.Log("Reloading...");
-        StartCoroutine(PlayerUI.Instance.ReloadProgress(PlayerManager.Instance.GetInfo().ReloadTime));
+        StartCoroutine(PlayerUI.Instance.ReloadProgress(PlayerManager.Instance.GetWeaponInfo().ReloadTime));
 
-        yield return new WaitForSeconds(PlayerManager.Instance.GetInfo().ReloadTime);
+        yield return new WaitForSeconds(PlayerManager.Instance.GetWeaponInfo().ReloadTime);
 
-        bulletCount = PlayerManager.Instance.GetInfo().MaxBullets;
-        bombCount = PlayerManager.Instance.GetInfo().MaxBombs;
-        PlayerUI.Instance.SetBulletCount(bulletCount, PlayerManager.Instance.GetInfo().MaxBullets);
-        PlayerUI.Instance.SetBombCount(bombCount, PlayerManager.Instance.GetInfo().MaxBombs);
+        currentAmmoCount = PlayerManager.Instance.GetWeaponInfo().MaxAmmo;
+        PlayerManager.Instance.GetWeaponInfo().currentAmmo = currentAmmoCount; // Update weapon's ammo
+        PlayerUI.Instance.SetAmmoCount(currentAmmoCount, PlayerManager.Instance.GetWeaponInfo().MaxAmmo);
         isReloading = false;
+    }
+
+    public int GetCurrentAmmo()
+    {
+        return currentAmmoCount; // Expose current ammo count
+    }
+
+    public void UpdateAmmoCount(int ammo, int maxAmmo)
+    {
+        currentAmmoCount = ammo;
+        PlayerUI.Instance.SetAmmoCount(currentAmmoCount, maxAmmo);
     }
 
     private void OnDrawGizmos()

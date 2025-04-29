@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using Unity.VisualScripting;
 
 public class PlayerUI : MonoBehaviour
 {
@@ -11,10 +12,6 @@ public class PlayerUI : MonoBehaviour
     private Image staminaBar;
     [SerializeField]
     private Image healthBar;
-    [SerializeField]
-    private TextMeshProUGUI bulletCountText;
-    [SerializeField]
-    private TextMeshProUGUI bombCountText;
     [SerializeField]
     private Image crosshairImage;
     [SerializeField]
@@ -27,6 +24,17 @@ public class PlayerUI : MonoBehaviour
     private GameObject gameMaskObject;
     [SerializeField]
     private TextMeshProUGUI countdownText;
+    [SerializeField]
+    private Image zoomImage;
+    [SerializeField]
+    private int zoomIn = 15;
+    [SerializeField]
+    private int zoomOut = 60;
+
+    [SerializeField]
+    private Image weaponUIImage;
+    [SerializeField]
+    private TextMeshProUGUI weaponAmmoCount;
 
     public Button testButton;
 
@@ -124,23 +132,30 @@ public class PlayerUI : MonoBehaviour
         }
     }
 
-    #region bullet
-    public void SetBulletCount(int count, int maxcount)
+    public void ZoomImage(bool isZoomMode)
     {
-        if (bulletCountText != null)
-            bulletCountText.text = count + "/" + maxcount;
+        if (zoomImage != null)
+        {
+            Camera.main.fieldOfView = isZoomMode ? zoomIn : zoomOut;
+            crosshairImage.gameObject.SetActive(!isZoomMode);
+            zoomImage.gameObject.SetActive(isZoomMode);
+        }
     }
-    #endregion
 
-    #region bomb
-    public void SetBombCount(int count, int maxcount)
+
+
+    public void SetAmmoCount(int count, int maxcount)
     {
-        if (bombCountText != null)
-            bombCountText.text = count + "/" + maxcount;
-
-        if (throwForceImage != null)
-            throwForceImage.gameObject.SetActive(false);
+        if (weaponAmmoCount != null)
+        {
+            if(maxcount == 0)
+                weaponAmmoCount.text = "-";
+            else
+                weaponAmmoCount.text = count + "/" + maxcount;
+        }
     }
+
+
     public void UpdateThrowForceUI(float currentForce, float maxForce)
     {
         if (throwForceImage != null)
@@ -149,12 +164,25 @@ public class PlayerUI : MonoBehaviour
             throwForceImage.fillAmount = currentForce / maxForce;
         }
     }
-    #endregion
 
-
-    public void UpdateWeaponUI(WeaponType weaponType)
+    public void SetFalseThrowForceUI()
     {
-        // Update the UI to reflect the currently selected weapon
-        // For example, highlight the selected weapon icon
+        if (throwForceImage != null)
+            throwForceImage.gameObject.SetActive(false);
+    }
+
+
+    public void UpdateWeaponUI(WeaponSO weapon)
+    {
+        if (weaponUIImage != null)
+            weaponUIImage.sprite = weapon.Icon;
+
+        if (weaponAmmoCount != null)
+        {
+            if (weapon.Type == WeaponType.Knife)
+                SetAmmoCount(weapon.currentAmmo, 0);
+            else
+                SetAmmoCount(weapon.currentAmmo, weapon.MaxAmmo); // Update ammo count
+        }
     }
 }
