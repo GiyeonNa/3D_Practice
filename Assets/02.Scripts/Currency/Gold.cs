@@ -11,17 +11,13 @@ public class Gold : MonoBehaviour
 
     private Transform playerTransform;
 
-    private void Start()
+    private void Update()
     {
-        // 플레이어의 Transform을 찾음
         GameObject player = GameObject.FindGameObjectWithTag("Player");
 
         if (player != null)
             playerTransform = player.transform;
-    }
 
-    private void Update()
-    {
         if (playerTransform == null) 
             return;
 
@@ -40,5 +36,11 @@ public class Gold : MonoBehaviour
             PlayerCurrencyManager.Instance.AddCurrency(goldAmount);
             Destroy(gameObject);
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, absorptionRange);
     }
 }
