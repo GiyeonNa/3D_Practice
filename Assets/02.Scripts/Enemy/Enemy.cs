@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Redcode.Pools;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,7 +14,7 @@ public enum EnemyState
     Dead
 }
 
-public class Enemy : MonoBehaviour, IDamageable
+public class Enemy : MonoBehaviour, IDamageable, IPoolObject
 {
     public GameObject player;
     protected CharacterController characterController; // Changed from private to protected
@@ -126,6 +127,32 @@ public class Enemy : MonoBehaviour, IDamageable
             {
                 Gizmos.DrawLine(PatrolPosList[i], PatrolPosList[i + 1]);
             }
+        }
+    }
+
+    public void OnCreatedInPool()
+    {
+        // Perform any initialization logic specific to when the object is created in the pool
+        Debug.Log("Enemy created in pool.");
+    }
+
+    public void OnGettingFromPool()
+    {
+        // Reset the state of the enemy when retrieved from the pool
+        Debug.Log("Enemy retrieved from pool.");
+        InitializeEnemy(); // Reset position, health, and other properties
+
+        // Reset health slider if applicable
+        if (healthSlider != null)
+        {
+            healthSlider.value = 1.0f; // Assuming max health is 100
+        }
+
+        // Reset animations or other state-specific data
+        if (animator != null)
+        {
+            animator.Rebind();
+            animator.Update(0f);
         }
     }
 }
