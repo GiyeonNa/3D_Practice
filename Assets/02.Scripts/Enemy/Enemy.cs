@@ -39,10 +39,9 @@ public class Enemy : MonoBehaviour, IDamageable, IPoolObject
     public float PatrolChangeTime;
     public float KnockbackForce;
 
-    // Add a reference to the health slider
+    // Change access modifier to protected for healthSlider
     [SerializeField]
-    private Slider healthSlider;
-
+    protected Slider healthSlider;
 
     private void Start()
     {
@@ -54,7 +53,7 @@ public class Enemy : MonoBehaviour, IDamageable, IPoolObject
         enemyFSM.Update();
     }
 
-    public void TakeDamage(Damage damage)
+    public virtual void TakeDamage(Damage damage) // Marked as virtual to allow overriding
     {
         ApplyDamage(damage);
     }

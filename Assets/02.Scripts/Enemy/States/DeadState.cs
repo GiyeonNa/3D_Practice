@@ -14,6 +14,12 @@ public class DeadState : IEnemyState
     public void Enter()
     {
         enemy.animator.SetTrigger("Die");
+
+        if (enemy is EliteEnemy eliteEnemy)
+        {
+            eliteEnemy.TriggerExplosion();
+        }
+
         GameObject.Destroy(enemy.gameObject);
     }
 

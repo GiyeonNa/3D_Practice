@@ -26,6 +26,12 @@ public class EnemyFsm
 
     public void ChangeState(eEnemyState newState)
     {
+        // Add logic to handle EliteEnemy-specific states if needed
+        if (_enemy is EliteEnemy eliteEnemy && newState == eEnemyState.Dead)
+        {
+            eliteEnemy.TriggerExplosion();
+        }
+
         _currentState.Exit();
         _currentState = _states[newState];
         _currentState.Enter();
