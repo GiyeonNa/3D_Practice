@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class DamagedState : IEnemyState
 {
@@ -16,6 +17,9 @@ public class DamagedState : IEnemyState
     {
         enemy.animator.SetTrigger("Hit");
         damageTimer = 0f;
+
+        // Change all child objects' colors to red temporarily
+        enemy.StartCoroutine(enemy.ChangeAllChildColorsTemporarily(Color.red, enemy.DamagedDelayTime));
     }
 
     public void Execute()
@@ -26,7 +30,7 @@ public class DamagedState : IEnemyState
             fsm.ChangeState(eEnemyState.Trace);
         }
 
-        enemy.GetComponent<CharacterController>().Move(enemy.knockbackDirection * enemy.KnockbackForce * Time.deltaTime);
+        //enemy.GetComponent<CharacterController>().Move(enemy.knockbackDirection * enemy.KnockbackForce * Time.deltaTime);
     }
 
     public void Exit()

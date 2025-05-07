@@ -168,11 +168,11 @@ public class PlayerFire : MonoBehaviour
         }
 
 
-        if (Input.GetMouseButton(1))
-        {
-            isZoomMode = !isZoomMode;
-            PlayerUI.Instance.ZoomImage(isZoomMode);
-        }
+        //if (Input.GetMouseButton(1))
+        //{
+        //    isZoomMode = !isZoomMode;
+        //    PlayerUI.Instance.ZoomImage(isZoomMode);
+        //}
 
 
     }
@@ -232,7 +232,7 @@ public class PlayerFire : MonoBehaviour
 
     public int GetCurrentAmmo()
     {
-        return currentAmmoCount; // Expose current ammo count
+        return currentAmmoCount; 
     }
 
     public void UpdateAmmoCount(int ammo, int maxAmmo)

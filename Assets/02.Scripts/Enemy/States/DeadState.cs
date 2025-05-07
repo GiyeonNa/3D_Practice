@@ -1,3 +1,4 @@
+using Redcode.Pools;
 using UnityEngine;
 
 public class DeadState : IEnemyState
@@ -20,7 +21,10 @@ public class DeadState : IEnemyState
             eliteEnemy.TriggerExplosion();
         }
 
+        var item = PoolManager.Instance.GetFromPool<Item>();
+        item.transform.position = enemy.transform.position;
         GameObject.Destroy(enemy.gameObject);
+
     }
 
     public void Execute()

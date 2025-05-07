@@ -4,6 +4,7 @@ public enum eEnemyState
     Trace,
     Patrol,
     Attack,
+    SpecialAttack,
     Return,
     Damaged,
     Dead

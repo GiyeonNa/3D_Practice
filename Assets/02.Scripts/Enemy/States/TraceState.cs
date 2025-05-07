@@ -27,6 +27,13 @@ public class TraceState : IEnemyState
 
         if (Vector3.Distance(enemy.transform.position, enemy.player.transform.position) < enemy.AttackDistance)
         {
+            // Check if the enemy is an EliteEnemy and trigger SpecialAttack with a 20% chance
+            if (enemy is EliteEnemy /*&& Random.value <= 0.2f*/)
+            {
+                fsm.ChangeState(eEnemyState.SpecialAttack);
+                return;
+            }
+
             fsm.ChangeState(eEnemyState.Attack);
             return;
         }

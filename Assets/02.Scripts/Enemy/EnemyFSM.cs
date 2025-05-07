@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 public class EnemyFsm
 {
-    private readonly Enemy _enemy;
+    protected Enemy _enemy;
     protected IEnemyState _currentState; // Changed from private to protected
-    protected readonly Dictionary<eEnemyState, IEnemyState> _states; // Changed from private to protected
+    protected Dictionary<eEnemyState, IEnemyState> _states; // Changed from private to protected
 
     public EnemyFsm(Enemy enemy)
     {
@@ -26,12 +26,6 @@ public class EnemyFsm
 
     public void ChangeState(eEnemyState newState)
     {
-        // Add logic to handle EliteEnemy-specific states if needed
-        if (_enemy is EliteEnemy eliteEnemy && newState == eEnemyState.Dead)
-        {
-            eliteEnemy.TriggerExplosion();
-        }
-
         _currentState.Exit();
         _currentState = _states[newState];
         _currentState.Enter();

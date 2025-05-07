@@ -1,6 +1,8 @@
+using Redcode.Pools;
+using UnityEditor.EditorTools;
 using UnityEngine;
 
-public class Item : MonoBehaviour
+public class Item : MonoBehaviour, IPoolObject
 {
     // Reference to the player
     private GameObject player;
@@ -93,13 +95,22 @@ public class Item : MonoBehaviour
         // Check if the colliding object is the player
         if (other.CompareTag("Player"))
         {
-            // Destroy the item to simulate collection
-            Destroy(gameObject);
+            PoolManager.Instance.TakeToPool<Item>(this);
         }
     }
 
     private float EaseInOutQuad(float t)
     {
         return t < 0.5f ? 2 * t * t : 1 - Mathf.Pow(-2 * t + 2, 2) / 2;
+    }
+
+    public void OnCreatedInPool()
+    {
+        
+    }
+
+    public void OnGettingFromPool()
+    {
+        gameObject.SetActive(true);
     }
 }

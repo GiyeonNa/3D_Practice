@@ -12,6 +12,7 @@ public class EliteEnemy : Enemy
     protected override void InitializeEnemy()
     {
         base.InitializeEnemy();
+        enemyFSM = new EliteEnemyFSM(this);
     }
 
     public override void TakeDamage(Damage damage)

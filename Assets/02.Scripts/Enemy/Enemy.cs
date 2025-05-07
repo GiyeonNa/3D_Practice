@@ -1,4 +1,5 @@
 ﻿using Redcode.Pools;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -43,6 +44,7 @@ public class Enemy : MonoBehaviour, IDamageable, IPoolObject
     [SerializeField]
     protected Slider healthSlider;
 
+
     private void Start()
     {
         InitializeEnemy();
@@ -56,6 +58,34 @@ public class Enemy : MonoBehaviour, IDamageable, IPoolObject
     public virtual void TakeDamage(Damage damage) // Marked as virtual to allow overriding
     {
         ApplyDamage(damage);
+    }
+
+    public IEnumerator ChangeAllChildColorsTemporarily(Color newColor, float duration)
+    {
+        Renderer[] childRenderers = GetComponentsInChildren<Renderer>();
+        Dictionary<Renderer, Color> originalColors = new Dictionary<Renderer, Color>();
+
+        // Store original colors and change to the new color
+        foreach (Renderer renderer in childRenderers)
+        {
+            if (renderer != null)
+            {
+                originalColors[renderer] = renderer.material.color;
+                renderer.material.color = newColor;
+            }
+        }
+
+        // Wait for the specified duration
+        yield return new WaitForSeconds(duration);
+
+        // Revert to original colors
+        foreach (var kvp in originalColors)
+        {
+            if (kvp.Key != null)
+            {
+                kvp.Key.material.color = kvp.Value;
+            }
+        }
     }
 
     private void OnDrawGizmos()
