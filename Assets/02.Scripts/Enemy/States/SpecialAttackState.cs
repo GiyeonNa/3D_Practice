@@ -22,7 +22,7 @@ public class SpecialAttackState : IEnemyState
     {
         if (!attackPerformed)
         {
-            PerformRangeAttack();
+            //PerformRangeAttack();
             attackPerformed = true;
         }
 
@@ -36,24 +36,5 @@ public class SpecialAttackState : IEnemyState
     public void Exit()
     {
         // Logic for exiting SpecialAttack state
-    }
-
-    private void PerformRangeAttack()
-    {
-        Collider[] hitColliders = Physics.OverlapSphere(enemy.transform.position, enemy.AttackDistance);
-        foreach (var hitCollider in hitColliders)
-        {
-            // Exclude the enemy itself
-            if (hitCollider.gameObject == enemy.gameObject)
-            {
-                continue;
-            }
-
-            if (hitCollider.TryGetComponent<IDamageable>(out var damageable))
-            {
-                Damage damage = new Damage { Value = 10, From = enemy.gameObject }; // Example damage calculation
-                damageable.TakeDamage(damage);
-            }
-        }
     }
 }

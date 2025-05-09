@@ -30,12 +30,29 @@ public class EliteEnemy : Enemy
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
         foreach (var hitCollider in hitColliders)
         {
+            if (hitCollider.gameObject == this.gameObject)
+            {
+                continue;
+            }
+
             if (hitCollider.TryGetComponent<IDamageable>(out var damageable))
             {
                 Damage damage = new Damage { Value = explosionDamage, From = this.gameObject };
                 damageable.TakeDamage(damage);
             }
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        DrawGizmos();
+    }
+
+    protected override void DrawGizmos()
+    {
+        base.DrawGizmos();
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, explosionRadius);
     }
 }
 

@@ -185,4 +185,5 @@ public class PlayerUI : MonoBehaviour
                 SetAmmoCount(weapon.currentAmmo, weapon.MaxAmmo); // Update ammo count
         }
     }
+
 }

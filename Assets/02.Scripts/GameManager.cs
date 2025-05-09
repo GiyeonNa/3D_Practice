@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering.VirtualTexturing;
 
@@ -17,6 +18,8 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+
+        Cursor.lockState = CursorLockMode.Confined;
     }
 
     private void Start()
@@ -26,6 +29,24 @@ public class GameManager : MonoBehaviour
 
         StartCoroutine(Play());
     }
+
+    public void Pause()
+    {
+        State = GameState.Ready;
+        Time.timeScale = 0;
+        //PopupManager.Instance.Open("UI_Option");
+        PopupManager.Instance.Open(EPopupType.UI_Option, Continue);
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    public void Continue()
+    {
+        State = GameState.Run;
+        Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
 
     private IEnumerator Play()
     {

@@ -13,7 +13,6 @@ public class PlayerFire : MonoBehaviour
     private bool isReloading = false;
     private float currentThrowForce;
     private float currentFirerate;
-    private bool isUIActive = false;
     private int currentAmmoCount;
 
     [SerializeField]
@@ -35,7 +34,6 @@ public class PlayerFire : MonoBehaviour
         else
             Destroy(gameObject);
 
-        Cursor.lockState = CursorLockMode.Confined;
         poolManager = Thing.FindFirstObjectByType<PoolManager>();
     }
 
@@ -51,16 +49,6 @@ public class PlayerFire : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            isUIActive = !isUIActive;
-            Cursor.lockState = isUIActive ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = isUIActive;
-        }
-
-        if (isUIActive)
-            return;
-
         currentFirerate += Time.deltaTime;
 
         if (Input.GetKeyDown(KeyCode.R))

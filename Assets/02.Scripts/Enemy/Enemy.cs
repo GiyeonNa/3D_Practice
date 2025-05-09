@@ -137,7 +137,7 @@ public class Enemy : MonoBehaviour, IDamageable, IPoolObject
         }
     }
 
-    private void DrawGizmos()
+    protected virtual void DrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, FindDistance);
